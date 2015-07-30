@@ -1,0 +1,4 @@
+tests/*.diff
+tests/*.out
+*.o
+thirdparty
