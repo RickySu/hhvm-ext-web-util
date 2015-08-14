@@ -6,18 +6,16 @@
 namespace HPHP {
     class web_util_R3Data {
         private:
-            node *n = NULL;
+            node *n;
         public:
+            web_util_R3Data();
             ALWAYS_INLINE node *create(int count){
+                sweep();
                 n = r3_tree_create(count);
                 return n;
             }
-            ~web_util_R3Data(){
-               if(n){
-                   r3_tree_free(n);
-                   n = NULL;
-               }     
-            }
+            void sweep();
+            ~web_util_R3Data();
             ALWAYS_INLINE node *getNode(){
                 return n;
             }

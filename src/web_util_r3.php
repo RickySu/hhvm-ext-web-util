@@ -1,6 +1,6 @@
 <?hh
 namespace WebUtil;
-<<__NativeData("R3")>>
+<<__NativeData("WebUtil\\R3")>>
 class R3
 {
     private array $routes = [];
@@ -12,19 +12,6 @@ class R3
         );
         return count($this->routes) - 1;
     }
-    public function compile():mixed{
-        return $this->_compile($this->routes);
-    }
-    public function match(string $uri, int $method):?array{
-        if(!($result = $this->_match($uri, $method))){
-            return null;
-        }
-        list($idx, $param) = $result;
-        return [
-            $this->routes[$idx][2],
-            $param,
-        ];
-    }
-    <<__Native>>private function _compile(array $routes):mixed;
-    <<__Native>>private function _match(string $uri, int $method):array;
+    <<__Native>>public function compile():bool;
+    <<__Native>>public function match(string $uri, int $method):array;
 }

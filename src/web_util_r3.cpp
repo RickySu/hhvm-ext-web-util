@@ -2,28 +2,43 @@
 
 namespace HPHP {
     
-    static Variant HHVM_METHOD(WebUtil_R3, _compile, const Array &routes) {
-        auto* data = Native::data<web_util_R3Data>(this_);
-        node *n = data->create(routes.size());
+    web_util_R3Data::web_util_R3Data(){
+        n = NULL;
+    }
+    
+    web_util_R3Data::~web_util_R3Data(){
+        sweep();
+    }
+    void web_util_R3Data::sweep() {
+        if(n){
+            r3_tree_free(n);
+            n = NULL;
+        }
+    }
 
+    static bool HHVM_METHOD(WebUtil_R3, compile) {
+        auto* data = Native::data<web_util_R3Data>(this_);
+        Array routes = this_->o_get("routes", false, s_web_util_r3).toArray();
+        node *n = data->create(routes.size());
         for (ArrayIter iter(routes); iter; ++iter) {
             Variant key(iter.first());
             String pattern = routes.rvalAt(key).toArray().rvalAt(0).toString();
             int64_t method = routes.rvalAt(key).toArray().rvalAt(1).toInt64();
             int64_t idx = key.toInt64Val();
             if(r3_tree_insert_routel(n, method, pattern.c_str(), pattern.size(), (void *) idx) == NULL) {
-                return idx;
+                return false;
             }
         }
         
         if(r3_tree_compile(n, NULL) != 0) {
-            return -1;
+            return false;
         }
         return true;
     }
     
-    static Array HHVM_METHOD(WebUtil_R3, _match, const String &uri, int64_t method) {
+    static Array HHVM_METHOD(WebUtil_R3, match, const String &uri, int64_t method) {
         auto* data = Native::data<web_util_R3Data>(this_);
+        Array routes = this_->o_get("routes", false, s_web_util_r3).toArray();
         node *n = data->getNode();
         Array ret;
 
@@ -37,7 +52,7 @@ namespace HPHP {
             for(int i=0;i<entry->vars->len;i++){
                 params.append(Variant(entry->vars->tokens[i]));
             }
-            ret = make_packed_array(matched, params);
+            ret = make_packed_array(routes[matched].toArray()[2], params);
         }
         
         match_entry_free(entry);
@@ -52,10 +67,10 @@ namespace HPHP {
         REGISTER_WEB_UTIL_CONSTANT(s_web_util_r3, METHOD_PATCH);
         REGISTER_WEB_UTIL_CONSTANT(s_web_util_r3, METHOD_HEAD);
         REGISTER_WEB_UTIL_CONSTANT(s_web_util_r3, METHOD_OPTIONS);
-        HHVM_ME(WebUtil_R3, _compile);
-        HHVM_ME(WebUtil_R3, _match);
-        HHVM_MALIAS(WebUtil\\R3, _compile, WebUtil_R3, _compile);
-        HHVM_MALIAS(WebUtil\\R3, _match, WebUtil_R3, _match);        
+        HHVM_ME(WebUtil_R3, compile);
+        HHVM_ME(WebUtil_R3, match);
+        HHVM_MALIAS(WebUtil\\R3, compile, WebUtil_R3, compile);
+        HHVM_MALIAS(WebUtil\\R3, match, WebUtil_R3, match);        
         Native::registerNativeDataInfo<web_util_R3Data>(s_web_util_r3.get());
     }
 }
