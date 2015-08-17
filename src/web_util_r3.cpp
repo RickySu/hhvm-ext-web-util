@@ -19,13 +19,14 @@ namespace HPHP {
     static bool HHVM_METHOD(WebUtil_R3, compile) {
         auto* data = Native::data<web_util_R3Data>(this_);
         Array routes = this_->o_get("routes", false, s_web_util_r3).toArray();
+        Array route;
         node *n = data->create(routes.size());
         for (ArrayIter iter(routes); iter; ++iter) {
             Variant key(iter.first());
-            String pattern = routes.rvalAt(key).toArray().rvalAt(0).toString();
-            int64_t method = routes.rvalAt(key).toArray().rvalAt(1).toInt64();
-            int64_t idx = key.toInt64Val();
-            if(r3_tree_insert_routel(n, method, pattern.c_str(), pattern.size(), (void *) idx) == NULL) {
+            route = routes.rvalAt(key).toArray();
+            String pattern = route.rvalAt(0).toString();
+            int64_t method = route.rvalAt(1).toInt64();
+            if(r3_tree_insert_routel(n, method, pattern.c_str(), pattern.size(), (void *) route.get()) == NULL) {
                 return false;
             }
         }
@@ -38,7 +39,8 @@ namespace HPHP {
     
     static Array HHVM_METHOD(WebUtil_R3, match, const String &uri, int64_t method) {
         auto* data = Native::data<web_util_R3Data>(this_);
-        Array routes = this_->o_get("routes", false, s_web_util_r3).toArray();
+        ArrayData *route_data;
+
         node *n = data->getNode();
         Array ret;
 
@@ -48,11 +50,11 @@ namespace HPHP {
                 
         if(matched_route != NULL) {
             Array params;
-            int64_t matched = (int64_t) matched_route->data;
+            route_data = (ArrayData *) matched_route->data;
             for(int i=0;i<entry->vars->len;i++){
                 params.append(Variant(entry->vars->tokens[i]));
             }
-            ret = make_packed_array(routes[matched].toArray()[2], params);
+            ret = make_packed_array(route_data->get(2), params);
         }
         
         match_entry_free(entry);
