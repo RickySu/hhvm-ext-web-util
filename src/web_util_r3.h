@@ -2,7 +2,13 @@
 #define WEB_UTIL_R3_H
 #include "ext.h"
 #include <r3/r3.h>
-
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <r3/r3_str.h>
+#ifdef __cplusplus
+}
+#endif
 namespace HPHP {
     class web_util_R3Data {
         private:
