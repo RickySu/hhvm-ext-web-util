@@ -1,0 +1,47 @@
+include(ExternalProject)
+
+set(HTTP_PARSER_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/http-parser)
+set(HTTP_PARSER_PREFIX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/build)
+set(HTTP_PARSER_INCLUDE_DIR ${HTTP_PARSER_PREFIX_DIR}/include)
+set(HTTP_PARSER_LIB ${HTTP_PARSER_PREFIX_DIR}/lib)
+
+set(CLEAN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/HTTP-PARSER-prefix\;${CLEAN_FILES}")
+
+ExternalProject_Add(HTTP_PARSER
+    SOURCE_DIR ${HTTP_PARSER_SOURCE}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+)
+
+ExternalProject_Add_Step(HTTP_PARSER MAKE_CLEAN
+    COMMAND PREFIX=${HTTP_PARSER_PREFIX_DIR} make clean
+    WORKING_DIRECTORY ${HTTP_PARSER_SOURCE}
+    COMMENT "http-parser make clean..."
+)
+
+ExternalProject_Add_Step(HTTP_PARSER MAKE_ALL
+    COMMAND PREFIX=${HTTP_PARSER_PREFIX_DIR} make package
+    WORKING_DIRECTORY ${HTTP_PARSER_SOURCE}
+    DEPENDEES MAKE_CLEAN
+    COMMENT "http-parser make package..."
+)
+
+ExternalProject_Add_Step(HTTP_PARSER MAKE_INSTALL
+    COMMAND PREFIX=${HTTP_PARSER_PREFIX_DIR} make install
+    WORKING_DIRECTORY ${HTTP_PARSER_SOURCE}
+    DEPENDEES MAKE_ALL
+    COMMENT "http-parser make install..."
+)
+
+ExternalProject_Add_Step(HTTP_PARSER COPY_PACKAGE
+    COMMAND cp libhttp_parser.o ${HTTP_PARSER_LIB}
+    WORKING_DIRECTORY ${HTTP_PARSER_SOURCE}
+    DEPENDEES MAKE_INSTALL
+    COMMENT "http-parser copy package..."
+)
+
+mark_as_advanced(
+    HTTP_PARSER_LIB
+    HTTP_PARSER_INCLUDE_DIR
+)

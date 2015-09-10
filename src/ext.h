@@ -14,10 +14,12 @@ namespace HPHP
             virtual void moduleInit()
             {
                 initR3();
+                initHttpParser();
                 loadSystemlib();
             }
         private:
             void initR3();
+            void initHttpParser();
     };
 }
 #endif
