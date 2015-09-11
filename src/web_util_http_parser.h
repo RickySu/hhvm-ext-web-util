@@ -3,13 +3,20 @@
 #include "ext.h"
 #include <http_parser.h>
 
-namespace HPHP {
+#define CONTENT_TYPE_NONE       0
+#define CONTENT_TYPE_URLENCODE  1
+#define CONTENT_TYPE_JSONENCODE 2
+#define CONTENT_TYPE_MULTIPART  3
 
+namespace HPHP {
+    
     typedef struct http_parser_ext_s: public http_parser{
         ObjectData *http_parser_object_data;
         String url;
         String Header;
         String Field;
+        String Body;
+        int contentType = CONTENT_TYPE_NONE;
         bool headerEnd;
     } http_parser_ext;
                 
