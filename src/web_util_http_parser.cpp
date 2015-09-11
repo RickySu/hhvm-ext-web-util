@@ -14,6 +14,7 @@ namespace HPHP {
         s_query("Query"),
         s_content("Content"),
         s_content_parsed("Content-Parsed"),
+        s_cookie("Cookie"),
         s_parsedData("parsedData")
     ;   
      
@@ -71,7 +72,47 @@ namespace HPHP {
             parser->headerEnd = false;
         }    
     }
-    
+
+    ALWAYS_INLINE void parseCookie(http_parser_ext *parser){
+        int token_equal_pos = 0, token_semi_pos = 0;
+        int field_start = 0;
+        int i = 0;
+        const char *cookieString;
+        int cookieString_len;
+        Array parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
+        Array parsedData_header = parsedData[s_header].toArray();
+        String parsedData_cookie = parsedData_header[s_cookie].toString();
+        Array cookie;
+        
+        if(parsedData_cookie.size() == 0){
+            return;
+        }
+        
+        cookieString = parsedData_cookie.c_str();
+        cookieString_len = parsedData_cookie.size();
+        while(true){
+            
+            if(cookieString[i] == '='){
+                if(token_equal_pos <= token_semi_pos){
+                    token_equal_pos = i;
+                }
+            }
+            
+            if(cookieString[i] == ';' || i==cookieString_len-1){
+                token_semi_pos = i;
+                cookie.set(String(&cookieString[field_start], token_equal_pos - field_start, CopyString), String(&cookieString[token_equal_pos+1], token_semi_pos - token_equal_pos - 1, CopyString));
+                field_start = i + 2;
+            }
+            
+            if(++i>=cookieString_len){
+                break;
+            }
+        }
+        
+        parsedData_header.set(s_cookie, cookie);
+        parsedData.set(s_header, parsedData_header);
+        parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
+    }    
     ALWAYS_INLINE void parseBody(http_parser_ext *parser){
         Array parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         Array params;
@@ -138,6 +179,7 @@ namespace HPHP {
         resetHeaderParser(parser);
         parseRequest(parser);
         parseContentType(parser);
+        parseCookie(parser);
         return 0;
     }
     
