@@ -24,6 +24,7 @@ namespace HPHP {
         public:    
             http_parser_ext *parser = NULL;
             Variant onParsedCallback;
+            void reset();
             web_util_HttpParserData();
             void sweep();
             ~web_util_HttpParserData();

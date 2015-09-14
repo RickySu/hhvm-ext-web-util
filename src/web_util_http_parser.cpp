@@ -148,12 +148,20 @@ namespace HPHP {
         (http_data_cb) on_body,    //on_body      
         (http_cb) on_message_complete     //on_message_complete
     };
+    
+    void web_util_HttpParserData::reset(){
+            parser->url.clear();
+            parser->Header.clear();
+            parser->Field.clear();
+            parser->Body.clear();
+            parser->headerEnd = false;
+            http_parser_init(parser, HTTP_REQUEST);
+    }
 
     web_util_HttpParserData::web_util_HttpParserData(){
-        onParsedCallback.setNull();        
+        onParsedCallback.setNull();
         parser = new http_parser_ext;
-        parser->headerEnd = false;
-        http_parser_init(parser, HTTP_REQUEST);
+        reset();
     }
     
     web_util_HttpParserData::~web_util_HttpParserData(){
@@ -162,10 +170,7 @@ namespace HPHP {
     
     void web_util_HttpParserData::sweep() {
         if(parser){
-            parser->url.clear();
-            parser->Header.clear();
-            parser->Field.clear();
-            parser->Body.clear();
+            reset();
             delete parser;
             parser = NULL;
         }
@@ -238,11 +243,18 @@ namespace HPHP {
         data->parser->http_parser_object_data = this_;
     }
     
+    static void HHVM_METHOD(WebUtil_HttpParser, reset) {
+        auto* data = Native::data<web_util_HttpParserData>(this_);
+        data->reset();
+    }
+    
     void web_utilExtension::initHttpParser() {
         HHVM_ME(WebUtil_HttpParser, __construct);
         HHVM_MALIAS(WebUtil\\Parser\\HttpParser, __construct, WebUtil_HttpParser, __construct);
         HHVM_ME(WebUtil_HttpParser, feed);
         HHVM_MALIAS(WebUtil\\Parser\\HttpParser, feed, WebUtil_HttpParser, feed);
+        HHVM_ME(WebUtil_HttpParser, reset);
+        HHVM_MALIAS(WebUtil\\Parser\\HttpParser, reset, WebUtil_HttpParser, reset);
         HHVM_ME(WebUtil_HttpParser, setOnParsedCallback);
         HHVM_MALIAS(WebUtil\\Parser\\HttpParser, setOnParsedCallback, WebUtil_HttpParser, setOnParsedCallback);
         Native::registerNativeDataInfo<web_util_HttpParserData>(s_web_util_http_parser.get());
