@@ -2,6 +2,6 @@
 #define	CONFIG_H
 #cmakedefine OPENSSL_FOUND
 #cmakedefine HHVM_API_VERSION ${HHVM_API_VERSION}
-
+#cmakedefine HAVE_HHVM_EXT_JSON_H
 #endif	/* CONFIG_H */
 

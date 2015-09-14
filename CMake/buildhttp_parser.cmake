@@ -45,3 +45,5 @@ mark_as_advanced(
     HTTP_PARSER_LIB
     HTTP_PARSER_INCLUDE_DIR
 )
+
+CHECK_INCLUDE_FILES(hphp/runtime/ext/json/ext_json.h HAVE_HHVM_EXT_JSON_H)

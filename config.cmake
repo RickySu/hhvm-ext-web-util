@@ -1,6 +1,8 @@
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -g")
 
+include(CheckIncludeFiles)
+
 include(buildhttp_parser)
 include(buildr3)
 

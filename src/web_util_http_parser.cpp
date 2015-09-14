@@ -1,6 +1,13 @@
 #include "web_util_http_parser.h"
 #include "hphp/runtime/server/http-protocol.h"
+
+#ifdef HAVE_HHVM_EXT_JSON_H
 #include "hphp/runtime/ext/json/ext_json.h"
+#else
+namespace HPHP{
+    Variant HHVM_FUNCTION(json_decode, const String& json, bool assoc = false, int64_t depth = 512, int64_t options = 0);
+}
+#endif
 
 namespace HPHP {
 
@@ -155,6 +162,10 @@ namespace HPHP {
     
     void web_util_HttpParserData::sweep() {
         if(parser){
+            parser->url.clear();
+            parser->Header.clear();
+            parser->Field.clear();
+            parser->Body.clear();
             delete parser;
             parser = NULL;
         }
