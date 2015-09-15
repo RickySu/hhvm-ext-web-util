@@ -1,5 +1,5 @@
-#ifndef WEB_UTIL_R3_H
-#define WEB_UTIL_R3_H
+#ifndef WEB_UTIL_HTTP_PARSER_H
+#define WEB_UTIL_HTTP_PARSER_H
 #include "ext.h"
 #include <http_parser.h>
 
