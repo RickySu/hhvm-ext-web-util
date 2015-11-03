@@ -24,6 +24,7 @@ namespace HPHP {
         s_content_parsed("Content-Parsed"),
         s_content_type("Content-Type"),
         s_cookie("Cookie"),
+        s_set_cookie("Set-Cookie"),
         s_parsedData("parsedData"),
         s_status_code("Status-Code"),
         s_protocol("Protocol"),
@@ -195,45 +196,34 @@ namespace HPHP {
         }
     }
 
-    ALWAYS_INLINE void parseCookie(http_parser_ext *parser){
+    ALWAYS_INLINE Array parseCookie(const char *cookieString, int cookieString_len){
         int token_equal_pos = 0, token_semi_pos = 0;
         int field_start = 0;
         int i = 0;
-        const char *cookieString;
-        int cookieString_len;
-        Array parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
-        Array parsedData_header = parsedData[s_header].toArray();
-        String parsedData_cookie = parsedData_header[s_cookie].toString();
         Array cookie;
-        
-        if(parsedData_cookie.size() == 0){
-            return;
-        }
-        
-        cookieString = parsedData_cookie.c_str();
-        cookieString_len = parsedData_cookie.size();
-        while(true){
-            
+        while(cookieString_len){
             if(cookieString[i] == '='){
                 if(token_equal_pos <= token_semi_pos){
                     token_equal_pos = i;
                 }
             }
-            
-            if(cookieString[i] == ';' || i==cookieString_len-1){
+            if(cookieString[i] == ';' || i==cookieString_len){
                 token_semi_pos = i;
-                cookie.set(String(&cookieString[field_start], token_equal_pos - field_start, CopyString), String(&cookieString[token_equal_pos+1], token_semi_pos - token_equal_pos - 1, CopyString));
+                if(token_equal_pos < field_start){
+                    cookie.set(String(&cookieString[field_start], i - field_start, CopyString), true);
+                }
+                else{
+                    cookie.set(String(&cookieString[field_start], token_equal_pos - field_start, CopyString), String(&cookieString[token_equal_pos+1], token_semi_pos - token_equal_pos - 1, CopyString));
+                }
                 field_start = i + 2;
             }
             
-            if(++i>=cookieString_len){
+            if(++i>cookieString_len){
                 break;
             }
         }
         
-        parsedData_header.set(s_cookie, cookie);
-        parsedData.set(s_header, parsedData_header);
-        parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
+        return cookie;
     }
 
     ALWAYS_INLINE Variant parseBody(http_parser_ext *parser){
@@ -322,13 +312,21 @@ namespace HPHP {
     
     static int on_headers_complete_response(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
-        Array parsedData;
+        Array parsedData, cookie, parsedData_header;
+        String parsedData_cookie;
         bool retval = true;
         resetHeaderParser(parser);
         parseResponse(parser);
         parseContentType(parser);
-        parseCookie(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
+        parsedData_header = parsedData[s_header].toArray();
+        parsedData_cookie = parsedData_header[s_set_cookie].toString();
+        cookie = parseCookie(parsedData_cookie.data(), parsedData_cookie.size());
+        if(!cookie.isNull()){
+            parsedData_header.set(s_set_cookie, cookie);
+            parsedData.set(s_header, parsedData_header);
+            parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
+        }
         if(!data->onHeaderParsedCallback.isNull()){
              retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
@@ -337,13 +335,21 @@ namespace HPHP {
 
     static int on_headers_complete_request(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
-        Array parsedData;
+        Array parsedData, cookie, parsedData_header;
+        String parsedData_cookie;
         bool retval = true;
         resetHeaderParser(parser);
-        parseRequest(parser);
+        parseResponse(parser);
         parseContentType(parser);
-        parseCookie(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
+        parsedData_header = parsedData[s_header].toArray();
+        parsedData_cookie = parsedData_header[s_cookie].toString();
+        cookie = parseCookie(parsedData_cookie.data(), parsedData_cookie.size());
+        if(!cookie.isNull()){
+            parsedData_header.set(s_cookie, cookie);
+            parsedData.set(s_header, parsedData_header);
+            parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
+        }
         if(!data->onHeaderParsedCallback.isNull()){
              retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
