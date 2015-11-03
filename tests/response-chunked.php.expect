@@ -1,0 +1,20 @@
+Array
+(
+    [Header] => Array
+        (
+            [Date] => Tue, 03 Nov 2015 06:20:11 GMT
+            [Server] => Apache
+            [Connection] => Keep-Alive
+            [Transfer-Encoding] => chunked
+            [Content-Type] => text/html
+        )
+
+    [Response] => Array
+        (
+            [Status-Code] => 200
+            [Protocol] => HTTP
+            [Protocol-Version] => 1.1
+        )
+
+)
+1234567890

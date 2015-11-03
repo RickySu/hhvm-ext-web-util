@@ -311,40 +311,43 @@ namespace HPHP {
     static int on_message_complete(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
         Array parsedData;
+        bool retval = true;
         Variant parsedBody = parseBody(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         if(!data->onBodyParsedCallback.isNull()){
-             vm_call_user_func(data->onBodyParsedCallback, make_packed_array(parsedBody));
+             retval = vm_call_user_func(data->onBodyParsedCallback, make_packed_array(parsedBody)).toBoolean();
         }
-        return 0;
+        return retval?0:1;
     }
     
     static int on_headers_complete_response(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
         Array parsedData;
+        bool retval = true;
         resetHeaderParser(parser);
         parseResponse(parser);
         parseContentType(parser);
         parseCookie(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         if(!data->onHeaderParsedCallback.isNull()){
-             vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData));
+             retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
-        return 0;
+        return retval?0:1;
     }
 
     static int on_headers_complete_request(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
         Array parsedData;
+        bool retval = true;
         resetHeaderParser(parser);
         parseRequest(parser);
         parseContentType(parser);
         parseCookie(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         if(!data->onHeaderParsedCallback.isNull()){
-             vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData));
+             retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
-        return 0;
+        return retval?0:1;
     }
     
     static int on_status(http_parser_ext *parser, const char *buf, size_t len){
@@ -370,9 +373,16 @@ namespace HPHP {
     
     static int on_response_body(http_parser_ext *parser, const char *buf, size_t len){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
+        bool retval = true;
+        
         if(!data->onContentPieceCallback.isNull()){
-             return !vm_call_user_func(data->onContentPieceCallback, make_packed_array(String(buf, len, CopyString))).toBoolean();
+             retval = vm_call_user_func(data->onContentPieceCallback, make_packed_array(String(buf, len, CopyString))).toBoolean();
         }
+        
+        if(!retval){
+            return 1;
+        }
+    
         parser->Body += String(buf, len, CopyString);
         return 0;
     }
@@ -380,8 +390,14 @@ namespace HPHP {
     
     static int on_request_body(http_parser_ext *parser, const char *buf, size_t len){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
+        bool retval = true;
+
         if(!data->onContentPieceCallback.isNull()){
-             return !vm_call_user_func(data->onContentPieceCallback, make_packed_array(String(buf, len, CopyString))).toBoolean();
+             retval = vm_call_user_func(data->onContentPieceCallback, make_packed_array(String(buf, len, CopyString))).toBoolean();
+        }
+
+        if(!retval){
+            return 1;
         }
 
         parser->Body += String(buf, len, CopyString);
