@@ -339,7 +339,7 @@ namespace HPHP {
         String parsedData_cookie;
         bool retval = true;
         resetHeaderParser(parser);
-        parseResponse(parser);
+        parseRequest(parser);
         parseContentType(parser);
         parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         parsedData_header = parsedData[s_header].toArray();
