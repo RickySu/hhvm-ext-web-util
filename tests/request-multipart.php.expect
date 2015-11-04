@@ -1,0 +1,34 @@
+Array
+(
+    [Header] => Array
+        (
+            [Host] => localhost:8888
+            [User-Agent] => Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0
+            [Accept] => text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+            [Accept-Language] => zh-TW,en-US;q=0.7,en;q=0.3
+            [Accept-Encoding] => gzip, deflate
+            [DNT] => 1
+            [Referer] => http://localhost/~ricky/a.html
+            [Connection] => keep-alive
+            [Content-Type] => multipart/form-data; boundary=---------------------------1652693014104906404602549995
+            [Content-Length] => 12627
+        )
+
+    [Request] => Array
+        (
+            [Method] => POST
+            [Target] => /
+            [Protocol] => HTTP
+            [Protocol-Version] => 1.1
+        )
+
+    [Query] => Array
+        (
+            [Path] => /
+            [Param] => 
+        )
+
+)
+f1:ok
+f2:ok
+f3:this is a test!
