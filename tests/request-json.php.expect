@@ -1,0 +1,32 @@
+Array
+(
+    [Header] => Array
+        (
+            [Host] => localhost
+            [User-Agent] => Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0
+            [Accept] => application/json, text/plain, */*
+            [Content-Type] => application/json;charset=utf-8
+            [Content-Length] => 51
+        )
+
+    [Request] => Array
+        (
+            [Method] => PUT
+            [Target] => /admin/category/2
+            [Protocol] => HTTP
+            [Protocol-Version] => 1.1
+        )
+
+    [Query] => Array
+        (
+            [Path] => /admin/category/2
+            [Param] => 
+        )
+
+)
+Array
+(
+    [name] => test
+    [key] => family
+    [description] => test
+)
