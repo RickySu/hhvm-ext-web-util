@@ -189,8 +189,6 @@ namespace HPHP {
             parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
             parser->Header.clear();
             parser->Field.clear();
-            parser->Delimiter.clear();
-            parser->DelimiterClose.clear();
             parser->headerEnd = false;
             
         }
