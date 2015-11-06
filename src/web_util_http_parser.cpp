@@ -195,9 +195,9 @@ namespace HPHP {
     }
 
     ALWAYS_INLINE Array parseCookie(const char *cookieString, int cookieString_len){
-        int token_equal_pos = 0, token_semi_pos = 0;
-        int field_start = 0;
-        int i = 0;
+        uint token_equal_pos = 0, token_semi_pos = 0;
+        uint field_start = 0;
+        uint i = 0;
         Array cookie;
         while(cookieString_len){
             if(cookieString[i] == '='){
