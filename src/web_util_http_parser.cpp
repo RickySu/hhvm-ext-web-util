@@ -194,11 +194,25 @@ namespace HPHP {
         }
     }
 
-    ALWAYS_INLINE Array parseCookie(const char *cookieString, int cookieString_len){
+    ALWAYS_INLINE void parseCookie(http_parser_ext *parser, const StaticString &s_cookie_field){
+        const char *cookieString;
+        uint cookieString_len;
         uint token_equal_pos = 0, token_semi_pos = 0;
         uint field_start = 0;
         uint i = 0;
-        Array cookie;
+        Array parsedData, cookie, parsedData_header;
+        String parsedData_cookie;
+        parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
+        parsedData_header = parsedData[s_header].toArray();
+        parsedData_cookie = parsedData_header[s_cookie_field].toString();
+
+        if(parsedData_cookie.size() == 0){
+            return;
+        }
+
+        cookieString = parsedData_cookie.data();
+        cookieString_len = parsedData_cookie.size();
+
         while(cookieString_len){
             if(cookieString[i] == '='){
                 if(token_equal_pos <= token_semi_pos){
@@ -220,8 +234,9 @@ namespace HPHP {
                 break;
             }
         }
-        
-        return cookie;
+        parsedData_header.set(s_cookie_field, cookie);
+        parsedData.set(s_header, parsedData_header);
+        parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
     }
 
     ALWAYS_INLINE Variant parseBody(http_parser_ext *parser){
@@ -310,22 +325,15 @@ namespace HPHP {
     
     static int on_headers_complete_response(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
-        Array parsedData, cookie, parsedData_header;
-        String parsedData_cookie;
+
         bool retval = true;
         resetHeaderParser(parser);
         parseResponse(parser);
         parseContentType(parser);
-        parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
-        parsedData_header = parsedData[s_header].toArray();
-        parsedData_cookie = parsedData_header[s_set_cookie].toString();
-        cookie = parseCookie(parsedData_cookie.data(), parsedData_cookie.size());
-        if(!cookie.isNull()){
-            parsedData_header.set(s_set_cookie, cookie);
-            parsedData.set(s_header, parsedData_header);
-            parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
-        }
+        parseCookie(parser, s_set_cookie);
+
         if(!data->onHeaderParsedCallback.isNull()){
+             Array parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
              retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
         return retval?0:1;
@@ -333,22 +341,16 @@ namespace HPHP {
 
     static int on_headers_complete_request(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
-        Array parsedData, cookie, parsedData_header;
+        Array cookie, parsedData_header;
         String parsedData_cookie;
         bool retval = true;
         resetHeaderParser(parser);
         parseRequest(parser);
         parseContentType(parser);
-        parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
-        parsedData_header = parsedData[s_header].toArray();
-        parsedData_cookie = parsedData_header[s_cookie].toString();
-        cookie = parseCookie(parsedData_cookie.data(), parsedData_cookie.size());
-        if(!cookie.isNull()){
-            parsedData_header.set(s_cookie, cookie);
-            parsedData.set(s_header, parsedData_header);
-            parser->http_parser_object_data->o_set(s_parsedData, parsedData, s_web_util_http_parser);
-        }
+        parseCookie(parser, s_cookie);
+
         if(!data->onHeaderParsedCallback.isNull()){
+            Array parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
              retval = vm_call_user_func(data->onHeaderParsedCallback, make_packed_array(parsedData)).toBoolean();
         }
         return retval?0:1;
