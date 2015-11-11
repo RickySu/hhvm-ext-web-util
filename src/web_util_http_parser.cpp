@@ -316,10 +316,10 @@ namespace HPHP {
         Array parsedData;
         bool retval = true;
         Variant parsedBody = parseBody(parser);
-        parsedData = parser->http_parser_object_data->o_get(s_parsedData, false, s_web_util_http_parser).toArray();
         if(!data->onBodyParsedCallback.isNull()){
              retval = vm_call_user_func(data->onBodyParsedCallback, make_packed_array(parsedBody)).toBoolean();
         }
+        data->reset();
         return retval?0:1;
     }
     
