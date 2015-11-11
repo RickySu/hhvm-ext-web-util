@@ -137,11 +137,11 @@ namespace HPHP {
             if(pos>=0){
                 parser->Delimiter = "\r\n--" + contentType.substr(pos + sizeof("boundary=") - 1) + "\r\n";
                 parser->DelimiterClose = "\r\n--" + contentType.substr(pos + sizeof("boundary=") - 1) + StaticString("--");
+                parser->MultipartHeaderData.clear();
+                parser->Body = "\r\n";
+                parser->multipartEnd = false;
+                parser->multipartHeader = false;
             }
-            parser->MultipartHeaderData.clear();
-            parser->Body = "\r\n";
-            parser->multipartEnd = false;
-            parser->multipartHeader = false;
             return;
         }
     }
