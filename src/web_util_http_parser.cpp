@@ -341,8 +341,7 @@ namespace HPHP {
 
     static int on_headers_complete_request(http_parser_ext *parser){
         auto* data = Native::data<web_util_HttpParserData>(parser->http_parser_object_data);
-        Array cookie, parsedData_header;
-        String parsedData_cookie;
+
         bool retval = true;
         resetHeaderParser(parser);
         parseRequest(parser);
