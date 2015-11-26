@@ -8,7 +8,23 @@ Array
                 (
                     [0] => Array
                         (
-                            [PHPSESSION] => 93qc462usashkajh1312
+                            [PHPSESSION1] => 1111
+                            [path] => /
+                            [secure] => 1
+                            [HttpOnly] => 1
+                        )
+
+                    [1] => Array
+                        (
+                            [PHPSESSION2] => 2222
+                            [path] => /
+                            [secure] => 1
+                            [HttpOnly] => 1
+                        )
+
+                    [2] => Array
+                        (
+                            [PHPSESSION3] => 3333
                             [path] => /
                             [secure] => 1
                             [HttpOnly] => 1
