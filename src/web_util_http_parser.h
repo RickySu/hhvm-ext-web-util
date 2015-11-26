@@ -2,7 +2,7 @@
 #define WEB_UTIL_HTTP_PARSER_H
 #include "ext.h"
 #include <http_parser.h>
-
+#include <hphp/runtime/ext/std/ext_std_variable.h>
 #define CONTENT_TYPE_NONE       0
 #define CONTENT_TYPE_URLENCODE  1
 #define CONTENT_TYPE_JSONENCODE 2
